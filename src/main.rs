@@ -3,12 +3,12 @@ use std::{f32::consts::PI, thread::sleep, time::Duration};
 
 mod uses;
 
-const WIDTH:usize = 600;
+const WIDTH:usize = 300;
 const HEIGHT:usize = 80;
 const CUBE_SIDE:usize = 50;
 const X_DEGREE:f64 = (PI as f64)*2.0/360.0;
-const Y_DEGREE:f64 = (PI as f64)*0.2/360.0;
-const Z_DEGREE:f64 = (PI as f64)*0.5/360.0;
+const Y_DEGREE:f64 = (PI as f64)*2.0/360.0;
+const Z_DEGREE:f64 = (PI as f64)*0.8/360.0;
 
 const BACKGROUND:char = ' ';
 
@@ -18,9 +18,10 @@ const COLOR:[char;6] = ['#','£','*','.','?','&'];
 fn rotate_x(p:&mut Side) {
 
    for i in p.corners.iter_mut() {
+
       i.y = i.y * X_DEGREE.cos() + i.z * X_DEGREE.sin();
       i.z = i.z * X_DEGREE.cos() - i.y * X_DEGREE.sin();
-       
+
    }
 }
 
@@ -43,12 +44,12 @@ fn rotate_z(p:&mut Side) {
 }
 
 fn get_z(s:&Side, x:f64,y:f64) -> f64 {
-   let v_1:Point = s.corners[1].sub(s.corners[0]);
-   let v_2:Point = s.corners[2].sub(s.corners[0]);
+   let v_1:Point = s.corners[1].sub(&s.corners[0]);
+   let v_2:Point = s.corners[2].sub(&s.corners[0]);
 
-   let norm:Point = v_1.cross(v_2);
+   let norm:Point = v_1.cross(&v_2);
 
-   let d:f64 = -norm.dot(s.corners[0]);
+   let d:f64 = -norm.dot(&s.corners[0]);
 
    return -(norm.x*x+norm.y*y+d)/norm.z;
 
@@ -129,7 +130,7 @@ fn main() {
                                          Point { x:  o_p, y:  o_p, z: -o_p },Point { x: -o_p, y:  o_p, z: -o_p }] }; //@
 
    let side6:Side = Side { corners: [Point { x: -o_p, y: -o_p, z: -o_p,},Point { x:  o_p, y: -o_p, z: -o_p },
-                                         Point { x:  o_p, y: -o_p, z:  o_p },Point { x: -o_p, y: -o_p, z:  o_p }] }; //$
+                                         Point { x:  o_p, y: -o_p, z:  o_p },Point { x: -o_p, y: -o_p, z:  o_p }]}; //$
 
    let mut sides:[Side;6] = [side1,side2,side3,side4,side5,side6];
 
@@ -141,6 +142,9 @@ fn main() {
          rotate_x(&mut sides[i]);
          rotate_y(&mut sides[i]);
          rotate_z(&mut sides[i]);
+         for i in &mut sides {
+            i.normalize(CUBE_SIDE);
+         }
 
          to_buffer(&sides[i], &mut draw_buffer, &mut z_pos, COLOR[i]);
       }
@@ -155,7 +159,7 @@ fn main() {
       
 
       print!("\n");
-      print!("{}",forever);
+      print!("{}  {}",forever,sides[0].corners[0].dot(&sides[0].corners[0]).sqrt());
       print!("\n");
 
       draw_buffer = [BACKGROUND;WIDTH*HEIGHT];
